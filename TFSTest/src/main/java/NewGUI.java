@@ -6,6 +6,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
@@ -21,6 +22,10 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.xml.bind.JAXBException;
+
+import org.docx4j.openpackaging.exceptions.Docx4JException;
+import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 
 public class NewGUI {
 
@@ -210,8 +215,26 @@ public class NewGUI {
 											// TODO Auto-generated catch block
 											e1.printStackTrace();
 										}
-									
-
+										try {
+											PlaceHolderReplacer.process(destinationFile3, SprintFolder.getPath()+File.separator+destinationFile3.getName(), "PBI_Number", pbiNumber);
+											//PlaceHolderReplacer.process(destinationFile3, SprintFolder.getPath()+File.separator+destinationFile3.getName()+"_result.docx", "PBI_Name", pbiName);
+										} catch (FileNotFoundException e1) {
+											// TODO Auto-generated catch block
+											e1.printStackTrace();
+										} catch (InvalidFormatException e1) {
+											// TODO Auto-generated catch block
+											e1.printStackTrace();
+										} catch (Docx4JException e1) {
+											// TODO Auto-generated catch block
+											e1.printStackTrace();
+										} catch (IOException e1) {
+											// TODO Auto-generated catch block
+											e1.printStackTrace();
+										} catch (JAXBException e1) {
+											// TODO Auto-generated catch block
+											e1.printStackTrace();
+										}
+										
 									}
 
 								}
@@ -220,6 +243,8 @@ public class NewGUI {
 						}
 						
 					}
+					
+					
 
 					else {
 						System.out.println("Directory already exists");
@@ -293,7 +318,7 @@ public class NewGUI {
 			targetChanne2.close();
 			sourceChanne2.close();
 		}
-		System.out.println("Success1");
+		//System.out.println("Success"+targetChanne2);
 	}
 	
 	
