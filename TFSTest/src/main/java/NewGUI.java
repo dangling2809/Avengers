@@ -5,10 +5,9 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,10 +21,8 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.xml.bind.JAXBException;
 
-import org.docx4j.openpackaging.exceptions.Docx4JException;
-import org.docx4j.openpackaging.exceptions.InvalidFormatException;
+import org.apache.commons.io.FileUtils;
 
 public class NewGUI {
 
@@ -75,7 +72,7 @@ public class NewGUI {
 				public void actionPerformed(ActionEvent e) {
 
 					String Path = path.getText();
-					String sprint = "Sprint " + t1.getText();
+					String sprint = "Sprint" + t1.getText();
 					
 					
 					
@@ -86,16 +83,13 @@ public class NewGUI {
 
 					String report = "";
 
-					Map<String,String> mapPBINumberToName=new HashMap<String,String>();
+					
 					List<String> pbiNumberList = new ArrayList<String>();
 					List<String> pbiNameList = new ArrayList<String>();
 
 					File SprintFolder = new File(Path + File.separator + sprint);
 					if (!(SprintFolder.exists())) {
 						SprintFolder.mkdir();
-						File fintr = new File(Path + File.separator + sprint + File.separator
-								+ "Integration_Test_Report_Sprint"
-								+ t1.getText() + "_Upgrade XX.docx");
 						/*try {
 							fintr.createNewFile();
 						} catch (IOException e2) {
@@ -107,9 +101,11 @@ public class NewGUI {
 
 						String numbers = t2.getText();
 						String names=txtPBIName.getText();
-						for (String pnum : numbers.split("|"))
+						String[] pbinumbers=numbers.split(",");
+						String[] pbinames=names.split(",");
+						for (String pnum : pbinumbers)
 							pbiNumberList.add(pnum);
-						for(String pname:names.split("|"))
+						for(String pname:pbinames)
 							pbiNameList.add(pname);
 						
 						Iterator<String> it1=pbiNumberList.iterator();
@@ -119,6 +115,11 @@ public class NewGUI {
 							
 							String pbiNumber=it1.next();
 							String pbiName=it2.next();
+							
+							Map<String,String> placeHolderToValueMap=new HashMap<String, String>();
+							
+							placeHolderToValueMap.put("PBI_Number", pbiNumber);
+							placeHolderToValueMap.put("PBI_Title", pbiName);
 							
 							pbino = "PBI_" + pbiNumber + "_TestCases.xls";
 							defno = "PBI_" + pbiNumber + "_Defect.xls";
@@ -142,27 +143,27 @@ public class NewGUI {
 											.exists())) && !(ReportFile.exists())) {
 
 										File source1 = new File(
-												"/home/dangling/shi/docs/Testcases_Standard.xlsx");
+												"/home/dangling/tnt/docs/Testcases_Standard.xlsx");
 										File destinationFile1 = new File(Path
 												+ File.separator + sprint + File.separator
 												+ pbiNumber.toString() + File.separator
 												+ pbino);
 
 										File source2 = new File(
-												"/home/dangling/shi/docs/Defect_Standard.xlsx");
+												"/home/dangling/tnt/docs/Defect_Standard.xlsx");
 										File destinationFile2 = new File(Path
 												+ File.separator + sprint + File.separator
 												+ pbiNumber.toString() + File.separator
 												+ defno);
 										File source3 = new File(
-												"/home/dangling/shi/docs/Testreport_Standard.docx");
+												"/home/dangling/tnt/docs/Testreport_Standard.docx");
 										File destinationFile3 = new File(Path
 												+ File.separator + sprint + File.separator
 												+ pbiNumber.toString() + File.separator
 												+ report);
 
 										File source4 = new File(
-												"/home/dangling/shi/docs/Integration_Test_Report_SprintXX_Upgrade XX.docx");
+												"/home/dangling/tnt/docs/Integration_Test_Report_SprintXX_Upgrade XX.docx");
 										File destinationFile4 = new File(
 												Path
 														+ File.separator
@@ -173,8 +174,6 @@ public class NewGUI {
 														+ "_Upgrade XX.docx");
 										
 										
-								
-										
 										System.out.println(pbino
 												+ "PBI is created");
 										System.out.println(defno
@@ -182,58 +181,29 @@ public class NewGUI {
 										System.out.println(defno
 												+ "Report file is created");
 
+										
 										try {
-											copyxls(source1, destinationFile1);
+											copy(source1, destinationFile1);
+											copy(source2, destinationFile2);
+											copy(source3, destinationFile3);
+											copy(source4, destinationFile4);
 											
 										} catch (IOException e1) {
 											// TODO Auto-generated catch block
 											e1.printStackTrace();
 										}
-										try {
-											copyxls(source2, destinationFile2);
-											
-										} catch (IOException e1) {
-											// TODO Auto-generated catch block
-											e1.printStackTrace();
-										}
-										try {
-											copyxls(source3, destinationFile3);
-										
-										    }
-										
-										 catch (IOException e1) {
-											// TODO Auto-generated catch block
-											e1.printStackTrace();
-										}
 										
 										try {
-											copyxls(source4, destinationFile4);
-										
-										    }
-										
-										 catch (IOException e1) {
-											// TODO Auto-generated catch block
-											e1.printStackTrace();
-										}
-										try {
-											PlaceHolderReplacer.process(destinationFile3, SprintFolder.getPath()+File.separator+destinationFile3.getName(), "PBI_Number", pbiNumber);
+											WordReplacer.process(destinationFile3, placeHolderToValueMap);
+											//PlaceHolderReplacer.process(destinationFile3, SprintFolder.getPath()+File.separator+destinationFile3.getName(), "PBI_Number", pbiNumber);
 											//PlaceHolderReplacer.process(destinationFile3, SprintFolder.getPath()+File.separator+destinationFile3.getName()+"_result.docx", "PBI_Name", pbiName);
 										} catch (FileNotFoundException e1) {
 											// TODO Auto-generated catch block
 											e1.printStackTrace();
-										} catch (InvalidFormatException e1) {
+										}  catch (IOException e1) {
 											// TODO Auto-generated catch block
 											e1.printStackTrace();
-										} catch (Docx4JException e1) {
-											// TODO Auto-generated catch block
-											e1.printStackTrace();
-										} catch (IOException e1) {
-											// TODO Auto-generated catch block
-											e1.printStackTrace();
-										} catch (JAXBException e1) {
-											// TODO Auto-generated catch block
-											e1.printStackTrace();
-										}
+										} 
 										
 									}
 
@@ -307,17 +277,9 @@ public class NewGUI {
 		}
 	}
 
-	private static void copyxls(File source1, File target1) throws IOException {
-		FileChannel sourceChanne2 = null;
-		FileChannel targetChanne2 = null;
-		try {
-			sourceChanne2 = new FileInputStream(source1).getChannel();
-			targetChanne2 = new FileOutputStream(target1).getChannel();
-			targetChanne2.transferFrom(sourceChanne2, 0, sourceChanne2.size());
-		} finally {
-			targetChanne2.close();
-			sourceChanne2.close();
-		}
+	private static void copy(File sourceFile, File destFile) throws IOException {
+		  FileUtils.copyFile(sourceFile,
+				  destFile);
 		//System.out.println("Success"+targetChanne2);
 	}
 	

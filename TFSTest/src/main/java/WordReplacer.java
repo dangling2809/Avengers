@@ -1,6 +1,8 @@
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -10,13 +12,20 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
+import org.apache.commons.io.FilenameUtils;
+
 
 public class WordReplacer {
 	
-	public static void process(String sourceDocxFile,String targetDocxFile,Map<String,String> placeHolderToValueMap) throws IOException
+	public static void process(File sourceDocxFile,Map<String,String> placeHolderToValueMap) throws IOException
 	{
+		String basename = FilenameUtils.getBaseName(sourceDocxFile.getName());
+		String extension = FilenameUtils.getExtension(sourceDocxFile.getName());
+		String tempFileName=basename+"_result";
+		String sourceFile=sourceDocxFile.getAbsolutePath();
+		File tempFile=new File(sourceDocxFile.getParent()+File.separator+tempFileName+extension);
 		ZipFile zipFile = new ZipFile(sourceDocxFile);//"/home/dangling/shi/result/Sprint 15/1/PBI_1_Report.docx");
-		final ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(targetDocxFile));//"/home/dangling/shi/result/Sprint 15/1/PBI_1_Report_Result.docx"));
+		final ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(tempFile));//"/home/dangling/shi/result/Sprint 15/1/PBI_1_Report_Result.docx"));
 		for(Enumeration e = zipFile.entries(); e.hasMoreElements(); ) 
 		{
 		   ZipEntry entryIn = (ZipEntry) e.nextElement();
@@ -60,16 +69,23 @@ public class WordReplacer {
 		    zos.closeEntry();
 		}
 		zos.close();
+		
+		//now delete the source file and rename temp file to source file name.
+		
+		if(sourceDocxFile.delete())
+		{
+			tempFile.renameTo(sourceDocxFile);
+		}
 	}
 	
 	public static void main(String[] args) throws IOException {
 		Map<String,String> placeHolderToValueMap=new HashMap<String, String>();
 		placeHolderToValueMap.put("PBI_Number", "1234");
 		placeHolderToValueMap.put("PBI_Title", "MyTitle");
-		//placeHolderToValueMap.put("Names of test team members", "Piyush,Shivangi");
+		
 		placeHolderToValueMap.put("Author_name", "DanB");
 		placeHolderToValueMap.put("Names of test team members", "Piyush,Shivangi");
-		process("/home/dangling/shi/result/Sprint 15/1/PBI_1_Report.docx", "/home/dangling/shi/result/Sprint 15/1/PBI_1_Report_Result.docx", placeHolderToValueMap);
+	//	process("/home/dangling/tnt/docs/Sprint12/1/PBI_1_Report.docx", "/home/dangling/tnt/result/Sprint12/1/PBI_1_Report_Result.docx", placeHolderToValueMap);
 	}
 }
 

@@ -8,6 +8,7 @@ import java.util.List;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 
+import org.apache.commons.lang.StringUtils;
 import org.docx4j.XmlUtils;
 import org.docx4j.model.structure.HeaderFooterPolicy;
 import org.docx4j.model.structure.SectionWrapper;
@@ -21,22 +22,54 @@ import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
 import org.docx4j.wml.ContentAccessor;
 import org.docx4j.wml.Text;
+import org.w3c.dom.Document;
 
 
 public class PlaceHolderReplacer 
 {
+	
+	public static void main(String[] args) throws FileNotFoundException, InvalidFormatException, Docx4JException, IOException, JAXBException {
+		process(new File("/home/dangling/shi/result/Sprint 15/1/PBI_1_Report.docx"), "/home/dangling/shi/result/Sprint 15/result.docx", "PBI_Number", "123");
+	}
+	
     public static void process( File documentToProcess,String destinationPath,String placeHolder,String value ) throws Docx4JException, FileNotFoundException, IOException, InvalidFormatException, JAXBException
     {
        // WordprocessingMLPackage template=getTemplate("/home/piyush/Testreport_Standard.docx");
         WordprocessingMLPackage template = WordprocessingMLPackage.load(new FileInputStream(documentToProcess));
-        replacePlaceholderHeaderFooter(template, placeHolder, value);
+        
+        org.docx4j.wml.Document document=template.getMainDocumentPart().getJaxbElement();
+       /* List list=document.getContent();
+        for(Object obj:list)
+    	{		
+        	System.out.println("========================");
+    	
+    	
+    		System.out.println(obj);
+    	}*/
+        printAllContent(document);
+        
+      //  replacePlaceholderHeaderFooter(template, placeHolder, value);
        // replacePlaceholder(template, value, placeHolder);
       // replaceHF(template,placeHolder,value);
        // replaceParagraph(placeholder, name, template, template.getMainDocumentPart());
         
-       writeDocxToStream(template, destinationPath);
+      /// writeDocxToStream(template, destinationPath);
         
        
+    }
+    
+    
+    public static void printAllContent(org.docx4j.wml.Document document)
+    {
+    	List list=document.getContent();
+    	for(Object obj:list)
+    	{		System.out.println("========================");
+    	
+    	if(obj instanceof javax.xml.bind.JAXBElement)
+    	//	printAllContent(((javax.xml.bind.JAXBElement)obj));
+    		
+    	System.out.println(obj);
+    	}
     }
     
     
@@ -45,13 +78,9 @@ public class PlaceHolderReplacer
 
     	if(value==null) value="";
 
-    	if(!base.contains(placeHolder)) {
-
+    	base=StringUtils.replace(base, placeHolder, value);
+    	
     	return base;
-
-    	}
-
-    	return base.replaceAll(placeHolder, value);
 
     	}
 
@@ -99,6 +128,7 @@ public class PlaceHolderReplacer
 
     	List<SectionWrapper> sectionWrappers = template.getDocumentModel().getSections();
 
+    	
     	for (SectionWrapper sw : sectionWrappers) {
 
     	HeaderFooterPolicy hfp = sw.getHeaderFooterPolicy();
@@ -110,6 +140,8 @@ public class PlaceHolderReplacer
     	HeaderPart evenHeader= hfp.getEvenHeader();
 
     	FooterPart firstFooter= hfp.getFirstFooter();
+    	
+    	
 
     	FooterPart defaultFooter= hfp.getDefaultFooter();
 
@@ -120,6 +152,8 @@ public class PlaceHolderReplacer
     	replaceHeader(defaultHeader,placeholder,newValue);
 
     	replaceHeader(evenHeader,placeholder,newValue);
+    	
+    	replaceHeader(hfp.getHeader(3), placeholder, newValue);
 
     	replaceFooter(firstFooter,placeholder,newValue);
 

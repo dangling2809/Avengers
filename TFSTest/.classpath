@@ -32,6 +32,5 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="/home/dangling/shi/TFS-SDK-11.0.0/redist/lib/com.microsoft.tfs.sdk-11.0.0.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
